@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beep Timer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a1a1a;
+        }
+        .container {
+            max-width: 28rem;
+        }
+        .neon-green-button {
+            background-color: #00ff00;
+            box-shadow: 0 0 6px #00ff00, 0 0 13px #00ff00, 0 0 19px #00ff00, inset 0 0 6px #00ff00;
+            transition: all 0.3s ease-in-out;
+        }
+        .neon-green-button:hover:not(:disabled) {
+            box-shadow: 0 0 13px #00ff00, 0 0 26px #00ff00, 0 0 38px #00ff00;
+            transform: translateY(-2px);
+        }
+        .neon-green-button:focus {
+            outline: none;
+            box-shadow: 0 0 13px #00ff00, 0 0 26px #00ff00, 0 0 38px #00ff00, inset 0 0 6px #00ff00;
+        }
+
+        .neon-yellow-button {
+            background-color: #ffff00;
+            box-shadow: 0 0 6px #ffff00, 0 0 13px #ffff00, 0 0 19px #ffff00, inset 0 0 6px #ffff00;
+            transition: all 0.3s ease-in-out;
+        }
+        .neon-yellow-button:hover:not(:disabled) {
+            box-shadow: 0 0 13px #ffff00, 0 0 26px #ffff00, 0 0 38px #ffff00;
+            transform: translateY(-2px);
+        }
+        .neon-yellow-button:focus {
+            outline: none;
+            box-shadow: 0 0 13px #ffff00, 0 0 26px #ffff00, 0 0 38px #ffff00, inset 0 0 6px #ffff00;
+        }
+        
+        .neon-red-button {
+            background-color: #ff0000;
+            box-shadow: 0 0 6px #ff0000, 0 0 13px #ff0000, 0 0 19px #ff0000, inset 0 0 6px #ff0000;
+            transition: all 0.3s ease-in-out;
+        }
+        .neon-red-button:hover:not(:disabled) {
+            box-shadow: 0 0 13px #ff0000, 0 0 26px #ff0000, 0 0 38px #ff0000;
+            transform: translateY(-2px);
+        }
+        .neon-red-button:focus {
+            outline: none;
+            box-shadow: 0 0 13px #ff0000, 0 0 26px #ff0000, 0 0 38px #ff0000, inset 0 0 6px #ff0000;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4">
+    <div class="container mx-auto p-8 bg-gray-800 rounded-2xl shadow-xl border border-gray-700">
+        <h1 class="text-3xl sm:text-4xl font-bold text-center text-gray-100 mb-6">Periodic Beep Timer</h1>
+        <p class="text-center text-gray-400 mb-8">Set an interval to trigger a sound.</p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+            <input type="number" id="intervalInput" value="1" min="1" class="w-full sm:w-1/2 p-3 text-lg text-center rounded-xl border-2 border-gray-600 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+            <select id="unitSelect" class="w-full sm:w-1/2 p-3 text-lg rounded-xl border-2 border-gray-600 bg-gray-700 text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                <option value="seconds">Seconds</option>
+                <option value="minutes" selected>Minutes</option>
+                <option value="hours">Hours</option>
+            </select>
+        </div>
+
+        <div class="text-center text-gray-300 font-medium mb-4">
+            Next Beep in:
+        </div>
+        <div id="countdownDisplay" class="text-5xl sm:text-6xl font-extrabold text-white text-center tracking-tight mb-8">
+            --:--
+        </div>
+        <div id="statusIndicator" class="text-center text-sm text-gray-500 mb-4"></div>
+
+        <div class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-center sm:space-x-4">
+            <button id="startButton" class="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-xl text-black neon-green-button disabled:opacity-50 disabled:cursor-not-allowed">Start</button>
+            <button id="pauseButton" disabled class="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-xl text-black neon-yellow-button disabled:opacity-50 disabled:cursor-not-allowed">Pause</button>
+            <button id="restartButton" disabled class="w-full sm:w-auto px-6 py-3 text-lg font-semibold rounded-xl text-black neon-red-button disabled:opacity-50 disabled:cursor-not-allowed">Restart</button>
+        </div>
+
+        <!-- Custom message box for alerts -->
+        <div id="messageBox" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-gray-800 rounded-lg p-6 shadow-2xl max-w-sm w-full border border-gray-700">
+                <p id="messageText" class="text-center text-lg font-medium text-gray-200 mb-4"></p>
+                <div class="flex justify-center">
+                    <button id="closeMessage" class="px-6 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const intervalInput = document.getElementById('intervalInput');
+        const unitSelect = document.getElementById('unitSelect');
+        const startButton = document.getElementById('startButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const restartButton = document.getElementById('restartButton');
+        const countdownDisplay = document.getElementById('countdownDisplay');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const closeMessageButton = document.getElementById('closeMessage');
+        const statusIndicator = document.getElementById('statusIndicator');
+
+        let timerInterval;
+        let originalIntervalInSeconds;
+        let remainingTimeInSeconds;
+        let isPaused = false;
+        let audioContext = null;
+        let silentOscillator = null;
+        let silentGainNode = null;
+
+        // Custom function to show a message box
+        function showMessage(message) {
+            messageText.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Initialize audio context for the beep sound
+        function initAudio() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.error('Web Audio API is not supported in this browser.', e);
+                    showMessage('Web Audio API is not supported in this browser. The beep sound will not work.');
+                }
+            }
+        }
+
+        // Function to play a simple beep sound
+        function playBeep() {
+            if (!audioContext) {
+                console.error('AudioContext is not initialized.');
+                return;
+            }
+
+            // Create a main oscillator with a square wave for a digital sound
+            const mainOscillator = audioContext.createOscillator();
+            mainOscillator.type = 'square';
+            mainOscillator.frequency.setValueAtTime(880, audioContext.currentTime); // A higher pitch for a futuristic feel
+
+            // Create a second, lower-pitched oscillator for a layered effect
+            const subOscillator = audioContext.createOscillator();
+            subOscillator.type = 'sawtooth';
+            subOscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+
+            // Create a gain node to control the overall volume
+            const masterGain = audioContext.createGain();
+            const loudness = 1.5;
+            masterGain.gain.setValueAtTime(loudness, audioContext.currentTime);
+
+            // Connect the oscillators to the gain node
+            mainOscillator.connect(masterGain);
+            subOscillator.connect(masterGain);
+            
+            // Connect the gain node to the speakers
+            masterGain.connect(audioContext.destination);
+
+            // Start the oscillators and fade out the sound
+            mainOscillator.start();
+            subOscillator.start();
+            
+            masterGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5); // Fade out
+            mainOscillator.stop(audioContext.currentTime + 0.5);
+            subOscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // Function to start a silent audio stream to keep the audio context awake
+        function startSilentAudio() {
+            if (audioContext && !silentOscillator) {
+                silentOscillator = audioContext.createOscillator();
+                silentGainNode = audioContext.createGain();
+
+                silentOscillator.connect(silentGainNode);
+                silentGainNode.connect(audioContext.destination);
+
+                silentOscillator.type = 'sine';
+                silentOscillator.frequency.setValueAtTime(1, audioContext.currentTime); // Very low frequency
+                silentGainNode.gain.setValueAtTime(0.00001, audioContext.currentTime); // Very low gain (practically silent)
+
+                silentOscillator.start();
+                statusIndicator.textContent = "Timer is running (audio active)";
+            }
+        }
+
+        // Function to stop the silent audio stream
+        function stopSilentAudio() {
+            if (silentOscillator) {
+                silentOscillator.stop();
+                silentOscillator = null;
+                silentGainNode = null;
+                statusIndicator.textContent = "";
+            }
+        }
+
+        function updateCountdownDisplay() {
+            const minutes = Math.floor(remainingTimeInSeconds / 60);
+            const seconds = remainingTimeInSeconds % 60;
+            countdownDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function startCountdown() {
+            // Clear any previous interval to prevent multiple timers from running
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            timerInterval = setInterval(() => {
+                if (remainingTimeInSeconds <= 0) {
+                    playBeep();
+                    remainingTimeInSeconds = originalIntervalInSeconds;
+                }
+                updateCountdownDisplay();
+                remainingTimeInSeconds--;
+            }, 1000); // Update every second
+        }
+
+        // Event listener for the start button
+        startButton.addEventListener('click', () => {
+            initAudio(); // Initialize audio context on first user interaction
+            startSilentAudio();
+
+            const intervalValue = parseInt(intervalInput.value, 10);
+            if (isNaN(intervalValue) || intervalValue <= 0) {
+                showMessage("Please enter a valid number greater than 0.");
+                stopSilentAudio();
+                return;
+            }
+
+            const unit = unitSelect.value;
+            let secondsMultiplier;
+            switch (unit) {
+                case 'seconds':
+                    secondsMultiplier = 1;
+                    break;
+                case 'minutes':
+                    secondsMultiplier = 60;
+                    break;
+                case 'hours':
+                    secondsMultiplier = 3600;
+                    break;
+            }
+
+            originalIntervalInSeconds = intervalValue * secondsMultiplier;
+            
+            if (isPaused) {
+                // If paused, just resume the countdown
+                isPaused = false;
+            } else {
+                // Otherwise, start a new countdown from scratch
+                remainingTimeInSeconds = originalIntervalInSeconds;
+            }
+            
+            startCountdown();
+            updateCountdownDisplay();
+
+            startButton.textContent = 'Running';
+            startButton.disabled = true;
+            pauseButton.disabled = false;
+            restartButton.disabled = false;
+        });
+
+        // Event listener for the pause button
+        pauseButton.addEventListener('click', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                stopSilentAudio();
+                isPaused = true;
+                startButton.textContent = 'Resume';
+                startButton.disabled = false;
+                pauseButton.disabled = true;
+            }
+        });
+
+        // Event listener for the restart button
+        restartButton.addEventListener('click', () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            stopSilentAudio();
+            isPaused = false;
+            remainingTimeInSeconds = 0;
+            countdownDisplay.textContent = '--:--';
+            startButton.textContent = 'Start';
+            startButton.disabled = false;
+            pauseButton.disabled = true;
+            restartButton.disabled = true;
+        });
+
+        // Event listener for closing the message box
+        closeMessageButton.addEventListener('click', () => {
+            messageBox.classList.add('hidden');
+        });
+    </script>
+</body>
+</html>
