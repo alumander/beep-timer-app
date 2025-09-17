@@ -76,9 +76,15 @@
         <div class="text-center text-gray-300 font-medium mb-4">
             Next Beep in:
         </div>
-        <div id="countdownDisplay" class="text-5xl sm:text-6xl font-extrabold text-white text-center tracking-tight mb-8">
+        <div id="countdownDisplay" class="text-5xl sm:text-6xl font-extrabold text-white text-center tracking-tight mb-4">
             --:--
         </div>
+        
+        <!-- New counter element -->
+        <div class="text-center text-gray-300 font-medium mb-8">
+            Beep Count: <span id="beepCounterDisplay" class="text-xl text-gray-100 font-bold">0</span>
+        </div>
+        
         <div id="statusIndicator" class="text-center text-sm text-gray-500 mb-4"></div>
 
         <div class="flex flex-col space-y-4 sm:space-y-0 sm:flex-row sm:justify-center sm:space-x-4">
@@ -105,6 +111,7 @@
         const pauseButton = document.getElementById('pauseButton');
         const restartButton = document.getElementById('restartButton');
         const countdownDisplay = document.getElementById('countdownDisplay');
+        const beepCounterDisplay = document.getElementById('beepCounterDisplay'); // Get the new counter element
         const messageBox = document.getElementById('messageBox');
         const messageText = document.getElementById('messageText');
         const closeMessageButton = document.getElementById('closeMessage');
@@ -114,6 +121,7 @@
         let originalIntervalInSeconds;
         let remainingTimeInSeconds;
         let isPaused = false;
+        let beepCount = 0; // Initialize the counter
         let audioContext = null;
         let silentOscillator = null;
         let silentGainNode = null;
@@ -217,6 +225,8 @@
             timerInterval = setInterval(() => {
                 if (remainingTimeInSeconds <= 0) {
                     playBeep();
+                    beepCount++; // Increment the counter
+                    beepCounterDisplay.textContent = beepCount; // Update the display
                     remainingTimeInSeconds = originalIntervalInSeconds;
                 }
                 updateCountdownDisplay();
@@ -290,7 +300,9 @@
             stopSilentAudio();
             isPaused = false;
             remainingTimeInSeconds = 0;
+            beepCount = 0; // Reset the counter
             countdownDisplay.textContent = '--:--';
+            beepCounterDisplay.textContent = '0'; // Update the counter display
             startButton.textContent = 'Start';
             startButton.disabled = false;
             pauseButton.disabled = true;
